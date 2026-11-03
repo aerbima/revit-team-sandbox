@@ -1,0 +1,13 @@
+# Владельцы кода: GitHub сам назначает ревьюера и, при включённом правиле, требует его одобрения.
+# Важно: правило в CODEOWNERS работает, только если в защите ветки включено «Require review from Code Owners».
+*                                   @aerbima    # по умолчанию любой файл проверяет тимлид
+/Directory.Build.props              @aerbima    # общие свойства сборки всех версий Revit (сценарий 8, TASK-TS-04)
+/Sandbox.sln                        @aerbima    # состав решения и конфигурации
+/src/Sandbox.Core/Marks/MarkFormat.cs     @aerbima    # контракт TASK-TS-01: от него зависят TS-02 и TS-03
+/src/Sandbox.Core/Marks/MarkGenerator.cs  @aerbima    # контракт TASK-TS-01
+/installer/                         @aerbima    # манифест .addin
+/build/                             @aerbima    # скрипты раскладки, установки и порога покрытия
+/.github/                           @aerbima    # CI, шаблоны, этот файл
+/tasks/                             @aerbima    # нарезка задач меняется только тимлидом
+/docs/                              @aerbima    # учебное мини-ТЗ — первоисточник требований
+/tools/                             @aerbima    # мост YouGile и проверка трассировки

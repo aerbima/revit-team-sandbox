@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Работа с документом Revit. Единственная сборка, где допустимы директивы REVIT2021…REVIT2025. -->
+
+  <PropertyGroup>
+    <RootNamespace>Sandbox.Revit</RootNamespace>
+    <AssemblyName>Sandbox.Revit</AssemblyName>
+    <UsesRevitApi>true</UsesRevitApi>                                     <!-- пакеты Revit API из Directory.Build.props -->
+  </PropertyGroup>
+  <!-- TargetFramework (net48 / net8.0-windows) приходит из Directory.Build.props -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sandbox.Core\Sandbox.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

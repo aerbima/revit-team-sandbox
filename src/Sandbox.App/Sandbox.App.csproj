@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Точка входа IExternalApplication, лента, команды. -->
+
+  <PropertyGroup>
+    <RootNamespace>Sandbox.App</RootNamespace>
+    <AssemblyName>Sandbox.App</AssemblyName>                              <!-- эту сборку указывает манифест .addin -->
+    <UseWPF>true</UseWPF>                                                 <!-- команды открывают окна WPF -->
+    <UsesRevitApi>true</UsesRevitApi>                                     <!-- пакеты Revit API из Directory.Build.props -->
+  </PropertyGroup>
+  <!-- TargetFramework (net48 / net8.0-windows) приходит из Directory.Build.props -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sandbox.Core\Sandbox.Core.csproj" />
+    <ProjectReference Include="..\Sandbox.Revit\Sandbox.Revit.csproj" />
+    <ProjectReference Include="..\Sandbox.UI\Sandbox.UI.csproj" />
+  </ItemGroup>
+
+  <!-- ===== Раскладка в Revit для отладки: build/deploy-dev.ps1 ===== -->
+  <PropertyGroup>                                                          <!-- свойства раскладки -->
+    <SandboxDeployDev>$(Configuration.StartsWith('Debug'))</SandboxDeployDev> <!-- True для Debug2021…Debug2025, False для Release -->
+    <SandboxDeployScript>$(MSBuildProjectDirectory)\..\..\build\deploy-dev.ps1</SandboxDeployScript> <!-- путь от каталога проекта: работает и без решения -->
+  </PropertyGroup>                                                         <!-- конец свойств раскладки -->
+
+  <!-- Имя PostBuild узнаёт Visual Studio. В GitHub Actions переменная CI=true, там раскладка не нужна -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent"
+          Condition="'$(SandboxDeployDev)' == 'True' And '$(CI)' != 'true'">
+    <!-- powershell.exe = Windows PowerShell 5.1; -File даёт код выхода 1 при исключении, сборка становится красной -->
+    <!-- $(TargetPath), а не $(TargetDir): завершающая обратная косая черта перед кавычкой ломает разбор аргумента -->
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(SandboxDeployScript)&quot; -RevitVersion $(RevitVersion) -AssemblyPath &quot;$(TargetPath)&quot;" />
+  </Target>                                                                <!-- конец цели раскладки -->
+
+</Project>

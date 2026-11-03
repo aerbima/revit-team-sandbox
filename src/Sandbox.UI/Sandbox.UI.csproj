@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Окна WPF. Директивы условной компиляции запрещены, Revit API не подключается. -->
+
+  <PropertyGroup>
+    <RootNamespace>Sandbox.UI</RootNamespace>
+    <AssemblyName>Sandbox.UI</AssemblyName>
+    <UseWPF>true</UseWPF>                                                 <!-- WPF для net48 и net8.0-windows -->
+  </PropertyGroup>
+  <!-- TargetFramework (net48 / net8.0-windows) приходит из Directory.Build.props -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sandbox.Core\Sandbox.Core.csproj" />
+  </ItemGroup>
+
+</Project>

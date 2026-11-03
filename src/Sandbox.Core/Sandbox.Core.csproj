@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Ядро: чистая логика без Revit API и WPF. Одна сборка на все версии Revit.
+       Директивы условной компиляции здесь запрещены — это проверяет RepositoryRulesTests. -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>                     <!-- подходит и для net48, и для net8 -->
+    <RootNamespace>Sandbox.Core</RootNamespace>
+    <AssemblyName>Sandbox.Core</AssemblyName>                             <!-- это имя ищет порог покрытия в CI -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sandbox.Core.Tests" />                   <!-- тесты видят internal-члены -->
+  </ItemGroup>
+
+</Project>

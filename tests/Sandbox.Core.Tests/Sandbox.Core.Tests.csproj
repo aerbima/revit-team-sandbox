@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Тесты ядра. Revit не нужен — выполняются в CI при любой конфигурации. -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>                             <!-- переопределяет фреймворк из Directory.Build.props -->
+    <RootNamespace>Sandbox.Core.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>           <!-- тестам XML-документация не нужна -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Версии как в рабочем решении, плюс сборщик покрытия -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="coverlet.collector" Version="10.1.0" />    <!-- сбор покрытия в CI (ключ collect "XPlat Code Coverage"); нужен SDK 8.0.414+ -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sandbox.Core\Sandbox.Core.csproj" />
+  </ItemGroup>
+
+</Project>

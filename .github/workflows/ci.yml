@@ -1,0 +1,88 @@
+name: ci                                                       # имя конвейера; его задания станут обязательными проверками ветки
+
+on:                                                            # когда запускать
+  pull_request:                                                # каждый PR…
+    branches: [dev, master]                                    # …в ветку интеграции и в ветку релизов
+    types: [opened, synchronize, reopened, ready_for_review]   # открыт, обновлён, переоткрыт, снят черновик
+  push:                                                        # каждое попадание кода…
+    branches: [dev, master]                                    # …в защищённые ветки, то есть после слияния
+  workflow_dispatch:                                           # ручной запуск из вкладки Actions
+
+concurrency:                                                   # один актуальный прогон на PR
+  group: ci-${{ github.event.pull_request.number || github.ref }}  # группа: номер PR или имя ветки
+  cancel-in-progress: true                                     # новый push отменяет устаревший прогон
+
+permissions:                                                   # права служебного токена GITHUB_TOKEN
+  contents: read                                               # читать код
+  checks: write                                                # публиковать отчёт тестов отдельной проверкой
+  pull-requests: read                                          # читать данные PR
+
+jobs:                                                          # задания конвейера
+  format:                                                      # 1. стиль кода — быстро и дёшево
+    runs-on: windows-latest                                    # проекты WPF и net48 открываются только на Windows
+    steps:                                                     # шаги
+      - uses: actions/checkout@v4                              # получить исходники
+      - uses: actions/setup-dotnet@v4                          # установить .NET SDK
+        with:                                                  # параметры установки
+          dotnet-version: '8.0.x'                              # та же версия SDK, что у разработчиков
+      - run: dotnet format Sandbox.sln --verify-no-changes --verbosity minimal  # ненулевой код выхода, если нужно переформатирование
+
+  trace:                                                       # 2. привязка тестов к требованиям таска
+    if: github.event_name == 'pull_request'                    # только для PR: нужен заголовок с кодом TASK-…
+    runs-on: ubuntu-latest                                     # скрипту на Python Windows не нужен, Linux дешевле
+    steps:                                                     # шаги
+      - uses: actions/checkout@v4                              # исходники с тасками и тестами
+      - run: python3 tools/trace_check.py                      # таблица «ТР → тесты» в сводку прогона
+        env:                                                   # данные PR для скрипта
+          PR_TITLE: ${{ github.event.pull_request.title }}     # заголовок вида «TASK-TS-01: …»
+          PR_BODY: ${{ github.event.pull_request.body }}       # описание; допускает «Тесты: не применимо — …»
+
+  build-test:                                                  # 3. сборка и тесты под каждую версию Revit
+    needs: format                                              # не тратим минуты, если нарушен стиль
+    runs-on: windows-latest                                    # сборка WPF и net48
+    strategy:                                                  # матрица версий
+      fail-fast: false                                         # падение одной версии не останавливает остальные
+      matrix:                                                  # значения матрицы
+        revit: ['2021', '2022', '2023', '2024', '2025']        # все поддерживаемые версии (ТР-У.00)
+    steps:                                                     # шаги
+      - uses: actions/checkout@v4                              # исходники
+      - uses: actions/setup-dotnet@v4                          # .NET SDK
+        with:                                                  # параметры
+          dotnet-version: '8.0.x'                              # версия SDK
+      - uses: microsoft/setup-msbuild@v2                       # MSBuild для net48 — как в нынешнем build.yml
+        if: matrix.revit != '2025'                             # Revit 2025 работает на .NET 8, там не нужен
+      - run: dotnet restore Sandbox.sln -p:Configuration=Release${{ matrix.revit }} -p:Platform=x64  # пакеты NuGet под версию Revit этой ячейки
+      - run: dotnet build Sandbox.sln -c Release${{ matrix.revit }} -p:Platform=x64 --no-restore  # сборка конфигурации этой версии
+      - run: dotnet test Sandbox.sln -c Release${{ matrix.revit }} -p:Platform=x64 --no-build --filter "Category!=RequiresRevit" --logger "trx;LogFilePrefix=revit${{ matrix.revit }}" --collect:"XPlat Code Coverage" --results-directory TestResults  # тесты без Revit, отчёт TRX и покрытие
+      - uses: dorny/test-reporter@v3                           # результаты тестов отдельной проверкой в PR
+        if: ${{ !cancelled() }}                                # публикуем и при упавших тестах
+        with:                                                  # параметры отчёта
+          name: Тесты Revit ${{ matrix.revit }}                # имя проверки на странице PR
+          path: TestResults/*.trx                              # файлы результатов
+          reporter: dotnet-trx                                 # формат xUnit через логгер TRX
+      - name: Покрытие ядра                                     # порог покрытия строк Sandbox.Core
+        if: matrix.revit == '2025'                             # одной версии достаточно: ядро netstandard2.0 общее
+        shell: pwsh                                            # PowerShell 7 на раннере
+        run: ./build/coverage-gate.ps1 -Threshold 70           # сводка в отчёт прогона; ниже порога — красный шаг
+      - name: Состав сборки для тестировщиков                  # архив для проверки в Revit
+        if: github.event_name == 'pull_request'                # только для PR
+        uses: actions/upload-artifact@v4                       # артефакт прогона
+        with:                                                  # параметры артефакта
+          name: build-revit${{ matrix.revit }}                 # отдельный архив на версию
+          path: build/bin/${{ matrix.revit }}/Sandbox.App/  # сборки плагина со всеми зависимостями
+          retention-days: 14                                   # хранить две недели
+
+  notify:                                                      # 4. итог CI в чат задачи YouGile
+    needs: build-test                                          # после сборки и тестов
+    if: ${{ always() && github.event_name == 'pull_request' && vars.YG_BOARD_ID != '' }}  # при любом итоге, только для PR и только после подключения YouGile
+    runs-on: ubuntu-latest                                     # Python есть на раннере
+    steps:                                                     # шаги
+      - uses: actions/checkout@v4                              # скрипты моста
+      - run: python3 bridge.py ci                              # сообщение «CI зелёный / CI упал» в чат задачи
+        working-directory: tools/yougile                       # рядом лежит yg_api.py
+        env:                                                   # данные для скрипта
+          YOUGILE_API_KEY: ${{ secrets.YOUGILE_API_KEY }}      # ключ API из секретов репозитория
+          YG_BOARD_ID: ${{ vars.YG_BOARD_ID }}                 # ID доски из переменных репозитория
+          PR_TITLE: ${{ github.event.pull_request.title }}     # заголовок PR с кодом задачи
+          CI_RESULT: ${{ needs.build-test.result }}            # success / failure / cancelled
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}  # ссылка на прогон

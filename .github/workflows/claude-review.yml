@@ -1,0 +1,26 @@
+name: claude-review                                             # автоматическое ИИ-ревью каждого PR
+
+on:                                                            # когда запускать
+  pull_request:                                                # события PR
+    types: [opened, synchronize, ready_for_review, reopened]   # открыт, обновлён, снят черновик, переоткрыт
+
+jobs:                                                          # одно задание
+  review:                                                      # ревью
+    if: vars.CLAUDE_REVIEW == 'on'                             # включается переменной репозитория после добавления токена
+    runs-on: ubuntu-latest                                     # сборка не нужна, Linux дешевле
+    permissions:                                               # права, указанные в документации действия
+      contents: read                                           # читать код
+      pull-requests: read                                      # читать PR
+      issues: read                                             # читать обсуждения
+      id-token: write                                          # аутентификация через приложение Claude GitHub App
+    steps:                                                     # шаги
+      - uses: actions/checkout@v6                              # исходники и CLAUDE.md с правилами проекта
+        with:                                                  # параметры
+          fetch-depth: 1                                       # история не нужна
+      - uses: anthropics/claude-code-action@v1                 # официальное действие Claude Code
+        with:                                                  # параметры действия
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}  # токен подписки (claude setup-token) или anthropic_api_key
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"  # каталог плагинов
+          plugins: "code-review@claude-code-plugins"           # плагин ревью кода
+          prompt: "/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"  # ревью этого PR с комментариями в нём
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'  # разрешаем писать построчные комментарии

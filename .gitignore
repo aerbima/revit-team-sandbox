@@ -1,0 +1,22 @@
+# Сборка и тесты
+[Bb]in/
+[Oo]bj/
+build/bin/
+TestResults/
+coverage/
+*.trx
+x64/
+
+# Visual Studio / Rider / VS Code
+.vs/
+*.user
+*.suo
+.idea/
+.vscode/
+
+# NuGet
+packages/
+*.nupkg
+
+# Python
+__pycache__/

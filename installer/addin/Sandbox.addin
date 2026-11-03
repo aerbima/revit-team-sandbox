@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Манифест учебного плагина. Кладётся в %AppData%\Autodesk\Revit\Addins\<версия>\ скриптом build/install-build.ps1 -->
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Revit Team Sandbox</Name>
+    <Assembly>Sandbox\Sandbox.App.dll</Assembly>
+    <AddInId>9C89C862-0A27-44DE-9597-DD635B88DFFE</AddInId>
+    <FullClassName>Sandbox.App.SandboxApplication</FullClassName>
+    <VendorId>SANDBOX</VendorId>
+    <VendorDescription>Revit Team Sandbox — учебный плагин</VendorDescription>
+  </AddIn>
+</RevitAddIns>

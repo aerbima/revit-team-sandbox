@@ -1,0 +1,30 @@
+name: review-mail                                               # письмо программисту с отчётом ревью
+
+on:                                                            # когда запускать
+  pull_request_review:                                         # ревью PR
+    types: [submitted]                                         # ревью отправлено
+
+permissions:                                                   # права токена
+  contents: read                                               # только чтение
+
+jobs:                                                          # одно задание
+  mail:                                                        # отправка письма
+    if: github.event.review.state != 'commented' && vars.DEV_EMAILS != ''  # только «одобрено» или «возврат» и только после настройки почты
+    runs-on: ubuntu-latest                                     # Linux-раннер
+    steps:                                                     # шаги
+      - name: Отчёт в файл                                      # тело ревью → файл-вложение
+        run: printf '%s\n' "$REVIEW_BODY" > review.md          # printf безопасен для любого текста
+        env:                                                   # текст ревью передаём через переменную, не подставляем в команду
+          REVIEW_BODY: ${{ github.event.review.body }}         # тело ревью = отчёт о проверке
+      - uses: dawidd6/action-send-mail@v23                     # отправка по SMTP (актуальный мажорный тег на 28.10.2026)
+        with:                                                  # параметры письма
+          server_address: smtp.gmail.com                       # SMTP-сервер почты, с которой пишете
+          server_port: 465                                     # порт SSL
+          secure: true                                         # шифрованное соединение
+          username: ${{ secrets.MAIL_USERNAME }}               # логин почты из секретов
+          password: ${{ secrets.MAIL_PASSWORD }}               # пароль приложения Gmail, не основной пароль
+          from: 'Revit Team Sandbox <${{ secrets.MAIL_USERNAME }}>'  # отправитель
+          to: ${{ fromJSON(vars.DEV_EMAILS)[github.event.pull_request.user.login] }}  # почта автора PR из словаря логин → адрес
+          subject: 'Ревью PR #${{ github.event.pull_request.number }}: ${{ github.event.review.state }}'  # тема письма
+          body: 'Отчёт о проверке — во вложении. PR: ${{ github.event.pull_request.html_url }}'  # короткий текст письма
+          attachments: review.md                               # отчёт файлом

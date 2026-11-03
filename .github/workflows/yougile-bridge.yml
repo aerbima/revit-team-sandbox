@@ -1,0 +1,48 @@
+name: yougile-bridge                                            # мост GitHub → YouGile
+
+on:                                                            # события, которые отражаются в карточке задачи
+  pull_request:                                                # жизненный цикл PR
+    types: [opened, reopened, ready_for_review, closed]        # открыт, снят черновик, закрыт или влит
+  pull_request_review:                                         # ревью PR
+    types: [submitted]                                         # отправлено ревью: одобрено или возврат
+  workflow_dispatch:                                           # ручное сообщение в чат задачи
+    inputs:                                                    # поля формы запуска
+      task:                                                    # код задачи
+        description: 'Код задачи, например TASK-TS-01'         # подсказка в форме
+        required: true                                         # без кода некуда писать
+      text:                                                    # текст сообщения
+        description: 'Текст сообщения в чат задачи'            # подсказка в форме
+        required: true                                         # пустое сообщение не нужно
+
+permissions:                                                   # мосту достаточно читать репозиторий
+  contents: read                                               # только чтение кода
+
+jobs:                                                          # одно задание
+  sync:                                                        # синхронизация
+    if: vars.YG_BOARD_ID != ''                                 # мост молчит, пока YouGile не подключён (этап A, шаг YouGile)
+    runs-on: ubuntu-latest                                     # Python есть на раннере
+    steps:                                                     # шаги
+      - uses: actions/checkout@v4                              # скрипты моста из репозитория
+      - name: Событие PR                                        # открытие, готовность, слияние
+        if: github.event_name == 'pull_request'                # только для событий PR
+        run: python3 bridge.py pr                              # перенос карточки и сообщение
+        working-directory: tools/yougile                       # каталог скриптов
+        env:                                                   # ключ и доска
+          YOUGILE_API_KEY: ${{ secrets.YOUGILE_API_KEY }}      # секрет репозитория
+          YG_BOARD_ID: ${{ vars.YG_BOARD_ID }}                 # переменная репозитория
+      - name: Ревью                                             # отчёт ревью файлом в чат задачи
+        if: github.event_name == 'pull_request_review'         # только для отправленного ревью
+        run: python3 bridge.py review                          # файл отчёта и перенос карточки
+        working-directory: tools/yougile                       # каталог скриптов
+        env:                                                   # ключ и доска
+          YOUGILE_API_KEY: ${{ secrets.YOUGILE_API_KEY }}      # секрет репозитория
+          YG_BOARD_ID: ${{ vars.YG_BOARD_ID }}                 # переменная репозитория
+      - name: Ручное сообщение                                  # запуск из вкладки Actions или командой gh
+        if: github.event_name == 'workflow_dispatch'           # только для ручного запуска
+        run: python3 bridge.py message                         # текст в чат задачи
+        working-directory: tools/yougile                       # каталог скриптов
+        env:                                                   # ключ, доска и поля формы
+          YOUGILE_API_KEY: ${{ secrets.YOUGILE_API_KEY }}      # секрет репозитория
+          YG_BOARD_ID: ${{ vars.YG_BOARD_ID }}                 # переменная репозитория
+          TASK: ${{ inputs.task }}                             # код задачи из формы
+          TEXT: ${{ inputs.text }}                             # текст из формы
