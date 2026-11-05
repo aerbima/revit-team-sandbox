@@ -1,7 +1,7 @@
 {
-  "TASK-TS-01": { "assignee": "dev1@example.com", "start": "2026-11-09", "deadline": "2026-11-10", "hours": 4 },
-  "TASK-TS-02": { "assignee": "dev2@example.com", "start": "2026-11-09", "deadline": "2026-11-11", "hours": 3 },
-  "TASK-TS-04": { "assignee": "dev1@example.com", "start": "2026-11-11", "deadline": "2026-11-11", "hours": 2 },
-  "TASK-TS-03": { "assignee": "dev2@example.com", "start": "2026-11-11", "deadline": "2026-11-13", "hours": 6 },
-  "TASK-TS-05": { "assignee": "dev1@example.com", "start": "2026-11-16", "deadline": "2026-11-17", "hours": 1 }
+  "TASK-TS-01": { "assignee": "az@belpp.by", "start": "2026-11-09", "deadline": "2026-11-10", "hours": 4 },
+  "TASK-TS-02": { "assignee": "alzhur1978@gmail.com", "start": "2026-11-09", "deadline": "2026-11-11", "hours": 3 },
+  "TASK-TS-04": { "assignee": "az@belpp.by", "start": "2026-11-11", "deadline": "2026-11-11", "hours": 2 },
+  "TASK-TS-03": { "assignee": "alzhur1978@gmail.com", "start": "2026-11-11", "deadline": "2026-11-13", "hours": 6 },
+  "TASK-TS-05": { "assignee": "az@belpp.by", "start": "2026-11-16", "deadline": "2026-11-17", "hours": 1 }
 }
