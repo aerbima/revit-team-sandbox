@@ -61,7 +61,7 @@ docs/                                  мини-ТЗ, шаблон отчёта 
 1. Отдельный тестовый проект и доска с колонками ровно такими: **Бэклог, Готово к работе, В работе, Ревью, Возврат, Проверка в Revit, Принято, Оплачено**.
 2. Сотрудник-бот (отдельная почта) с доступом к проекту. Два тестовых программиста — сотрудники компании.
 3. На своём компьютере: `python tools/yougile/setup_key.py` → ключ и ID досок.
-4. GitHub → **Settings → Secrets and variables → Actions**: секрет `YOUGILE_API_KEY`, переменная `YG_BOARD_ID`.
+4. GitHub → **Settings → Secrets and variables → Actions**: секрет `YOUGILE_API_KEY`, переменные `YG_BOARD_ID` и `YG_API_BASE` (строка «Адрес API» из вывода скрипта, например `https://en.yougile.com/api-v2`).
 5. В `tools/yougile/plan.json` замените `dev1@example.com` / `dev2@example.com` на почты тестовых программистов в YouGile; PR в `dev`.
 6. **Actions → yougile-tasks → Run workflow**.
 

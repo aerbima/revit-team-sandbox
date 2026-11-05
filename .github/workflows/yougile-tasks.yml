@@ -15,4 +15,5 @@ jobs:                                                          # одно зад
         env:                                                   # ключ и доска
           YOUGILE_API_KEY: ${{ secrets.YOUGILE_API_KEY }}      # секрет репозитория
           YG_BOARD_ID: ${{ vars.YG_BOARD_ID }}                 # переменная репозитория
+          YG_API_BASE: ${{ vars.YG_API_BASE }}                   # адрес API YouGile (en./ru./без префикса)
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}  # ссылка на файл таска в описании карточки

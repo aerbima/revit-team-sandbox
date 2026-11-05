@@ -83,6 +83,7 @@ jobs:                                                          # задания 
         env:                                                   # данные для скрипта
           YOUGILE_API_KEY: ${{ secrets.YOUGILE_API_KEY }}      # ключ API из секретов репозитория
           YG_BOARD_ID: ${{ vars.YG_BOARD_ID }}                 # ID доски из переменных репозитория
+          YG_API_BASE: ${{ vars.YG_API_BASE }}                   # адрес API YouGile (en./ru./без префикса)
           PR_TITLE: ${{ github.event.pull_request.title }}     # заголовок PR с кодом задачи
           CI_RESULT: ${{ needs.build-test.result }}            # success / failure / cancelled
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}  # ссылка на прогон

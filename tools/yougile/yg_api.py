@@ -6,7 +6,7 @@ import urllib.parse                           # экранирование па�
 import urllib.request                         # HTTP-клиент стандартной библиотеки, без pip install
 import uuid                                   # граница частей multipart при загрузке файла
 
-BASE = "https://yougile.com/api-v2"           # адрес API по официальной документации YouGile
+BASE = os.environ.get("YG_API_BASE") or "https://yougile.com/api-v2"  # адрес API: переменная репозитория YG_API_BASE, например https://en.yougile.com/api-v2
 KEY = os.environ["YOUGILE_API_KEY"]           # ключ хранится в GitHub Secrets, в коде его нет
 PAUSE = 1.3                                   # лимит — не более 50 запросов в минуту на компанию
 
